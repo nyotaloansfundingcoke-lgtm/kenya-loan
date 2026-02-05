@@ -35,25 +35,39 @@ export function LoanSelection({ userData, onPaymentInitiated }: LoanSelectionPro
     setIsProcessing(true);
 
     try {
-      // Format phone number for M-Pesa (add 254 prefix)
-      const formattedPhone = userData.phoneNumber.startsWith("0")
-        ? "254" + userData.phoneNumber.slice(1)
-        : userData.phoneNumber;
+      // Format phone number for M-Pesa (add 254 prefix and remove any spaces or dashes)
+      let formattedPhone = userData.phoneNumber.replace(/\s+|-/g, '');
+      
+      if (formattedPhone.startsWith("0")) {
+        formattedPhone = "254" + formattedPhone.slice(1);
+      } else if (formattedPhone.startsWith("+254")) {
+        formattedPhone = formattedPhone.slice(1);
+      } else if (formattedPhone.startsWith("7") && formattedPhone.length === 9) {
+        formattedPhone = "254" + formattedPhone;
+      }
 
+      // Validate phone number
+      if (!/^254[17]\d{8}$/.test(formattedPhone)) {
+        throw new Error("Invalid phone number format. Please use a valid Kenyan phone number.");
+      }
+
+      // LIVE API payload - Updated with your actual API key and merchant email
       const payload = {
-        api_key: "MGPY1EvRts3I", // Sandbox test key
-        email: "megapaysandboxtest@gmail.com",
+        api_key: "MGPYQeo8SNJp", // Your live API key
+        email: "collinskiptoo230@gmail.com", // MUST be the email for YOUR MegaPay merchant account
         amount: selectedLoan.fee.toString(),
         msisdn: formattedPhone,
-        reference: `LOAN-${userData.idNumber}-${selectedLoan.amount}`,
+        reference: `LOAN-${Date.now()}-${userData.idNumber}-${selectedLoan.amount}`, // Added timestamp for uniqueness
       };
 
-      console.log("Initiating STK push with payload:", payload);
+      console.log("Initiating LIVE STK push with payload:", payload);
 
+      // LIVE endpoint
       const response = await fetch("https://megapay.co.ke/backend/v1/initiatestk", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Accept": "application/json",
         },
         body: JSON.stringify(payload),
       });
@@ -62,21 +76,26 @@ export function LoanSelection({ userData, onPaymentInitiated }: LoanSelectionPro
       const data = await response.json();
       console.log("Payment Response:", data);
 
-      if (data.success || data.status === "success") {
+      // Handle different response formats from MegaPay
+      if (data.success || data.status === "success" || data.success === "200") {
         toast({
           title: "Payment request sent!",
           description: "Check your phone for the M-Pesa prompt.",
         });
-        onPaymentInitiated(selectedLoan, data.transaction_request_id || "");
-      } else if (data.success === "200" || data.massage) {
-        // MegaPay returns success: "200" according to docs
+        onPaymentInitiated(selectedLoan, data.transaction_request_id || data.transactionId || data.requestId || "");
+      } else if (data.message && data.message.toLowerCase().includes("success")) {
+        // Some APIs return success in message field
         toast({
           title: "Payment request sent!",
           description: "Check your phone for the M-Pesa prompt.",
         });
-        onPaymentInitiated(selectedLoan, data.transaction_request_id || "");
+        onPaymentInitiated(selectedLoan, data.transaction_request_id || data.transactionId || "");
       } else {
-        throw new Error(data.message || "Payment initiation failed");
+        const errorMessage = data.message || 
+                             data.error || 
+                             data.errorMessage || 
+                             "Payment initiation failed";
+        throw new Error(errorMessage);
       }
     } catch (error) {
       console.error("Payment error:", error);
