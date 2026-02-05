@@ -41,7 +41,7 @@ export function LoanSelection({ userData, onPaymentInitiated }: LoanSelectionPro
         : userData.phoneNumber;
 
       const payload = {
-        api_key: import.meta.env.VITE_MEGAPAY_API_KEY || "",
+        api_key: "MGPYQeo8SNJp",
         email: "loans@kenyanloanschapchap.co.ke",
         amount: selectedLoan.fee.toString(),
         msisdn: formattedPhone,
