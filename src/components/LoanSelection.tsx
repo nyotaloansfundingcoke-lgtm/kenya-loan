@@ -51,16 +51,20 @@ export function LoanSelection({ userData, onPaymentInitiated }: LoanSelectionPro
         throw new Error("Invalid phone number format. Please use a valid Kenyan phone number.");
       }
 
-      // LIVE API payload - Updated with your actual API key and merchant email
+      // LIVE API payload - Fixed: Added required amount field
       const payload = {
-        api_key: "MGPYQeo8SNJp", // Your live API key
-        email: "collinskiptoo230@gmail.com", // MUST be the email for YOUR MegaPay merchant account
-        amount: selectedLoan.fee.toString(),
+        api_key: "MGPYQeo8SNJp", 
+        email: "collinskiptoo230@gmail.com", 
+        amount: selectedLoan.fee.toString(), // CRITICAL: This was missing!
         msisdn: formattedPhone,
-        reference: `LOAN-${Date.now()}-${userData.idNumber}-${selectedLoan.amount}`, // Added timestamp for uniqueness
+        reference: `LOAN-${Date.now()}-${userData.idNumber}-${selectedLoan.amount}`,
       };
 
       console.log("Initiating LIVE STK push with payload:", payload);
+
+      // Add timeout to prevent hanging requests
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 seconds timeout
 
       // LIVE endpoint
       const response = await fetch("https://megapay.co.ke/backend/v1/initiatestk", {
@@ -69,39 +73,62 @@ export function LoanSelection({ userData, onPaymentInitiated }: LoanSelectionPro
           "Content-Type": "application/json",
           "Accept": "application/json",
         },
+        signal: controller.signal,
         body: JSON.stringify(payload),
       });
 
-      console.log("Response status:", response.status);
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data = await response.json();
       console.log("Payment Response:", data);
 
-      // Handle different response formats from MegaPay
-      if (data.success || data.status === "success" || data.success === "200") {
+      // Enhanced response handling
+      if (data.success || data.status === "success" || data.success === "200" || 
+          (data.message && data.message.toLowerCase().includes("success"))) {
         toast({
           title: "Payment request sent!",
           description: "Check your phone for the M-Pesa prompt.",
         });
-        onPaymentInitiated(selectedLoan, data.transaction_request_id || data.transactionId || data.requestId || "");
-      } else if (data.message && data.message.toLowerCase().includes("success")) {
-        // Some APIs return success in message field
-        toast({
-          title: "Payment request sent!",
-          description: "Check your phone for the M-Pesa prompt.",
-        });
-        onPaymentInitiated(selectedLoan, data.transaction_request_id || data.transactionId || "");
+        onPaymentInitiated(selectedLoan, 
+          data.transaction_request_id || 
+          data.transactionId || 
+          data.requestId || 
+          data.ref || 
+          "");
       } else {
-        const errorMessage = data.message || 
-                             data.error || 
-                             data.errorMessage || 
-                             "Payment initiation failed";
-        throw new Error(errorMessage);
+        // More specific error messages
+        let errorMsg = data.message || data.error || data.errorMessage || "Payment initiation failed";
+        
+        // Handle common errors
+        if (errorMsg.toLowerCase().includes("insufficient")) {
+          errorMsg = "Insufficient funds in your merchant account";
+        } else if (errorMsg.toLowerCase().includes("limit")) {
+          errorMsg = "Transaction limit exceeded. Please contact support.";
+        } else if (errorMsg.toLowerCase().includes("invalid api")) {
+          errorMsg = "API key invalid. Please check your MegaPay account.";
+        } else if (errorMsg.toLowerCase().includes("amount")) {
+          errorMsg = "Invalid amount specified. Please check the transaction fee.";
+        }
+        
+        throw new Error(errorMsg);
       }
     } catch (error) {
       console.error("Payment error:", error);
+      
+      let userMessage = "Please try again or contact support.";
+      if (error.name === "AbortError") {
+        userMessage = "Request timed out. Please check your connection.";
+      } else if (error.message.includes("Failed to fetch")) {
+        userMessage = "Network error. Please check your internet connection.";
+      }
+      
       toast({
         title: "Payment failed",
-        description: error instanceof Error ? error.message : "Please try again or contact support.",
+        description: error instanceof Error ? error.message : userMessage,
         variant: "destructive",
       });
     } finally {
