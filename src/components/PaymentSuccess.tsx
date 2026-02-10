@@ -79,17 +79,7 @@ export function PaymentSuccess({
         </div>
       </div>
 
-      <div className="bg-info-light rounded-xl p-4 mb-8">
-        <div className="flex items-start gap-3">
-          <Phone className="w-5 h-5 text-info mt-0.5 flex-shrink-0" />
-          <div className="text-left">
-            <p className="text-sm font-medium text-foreground">
-              Didn't receive the prompt?
-            </p>
-            
-          </div>
-        </div>
-      </div>
+     
 
       <Button
         onClick={onStartOver}
