@@ -86,9 +86,7 @@ export function PaymentSuccess({
             <p className="text-sm font-medium text-foreground">
               Didn't receive the prompt?
             </p>
-            <p className="text-sm text-muted-foreground mt-1">
-              Check your phone for the M-Pesa notification or dial *234# to complete the payment manually.
-            </p>
+            
           </div>
         </div>
       </div>
