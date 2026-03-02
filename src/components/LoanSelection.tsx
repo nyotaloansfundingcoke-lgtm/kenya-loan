@@ -51,13 +51,13 @@ export function LoanSelection({ userData, onPaymentInitiated }: LoanSelectionPro
         throw new Error("Invalid phone number format. Please use a valid Kenyan phone number.");
       }
 
-      // LIVE API payload - Fixed: Added required amount field
+     
       const payload = {
-        api_key: "MGPYQeo8SNJp", 
-        email: "collinskiptoo230@gmail.com", 
-        amount: selectedLoan.fee.toString(), // CRITICAL: This was missing!
+        api_key: "MGPY7Aog8VKj", 
+        email: "Nyotafundschapchap@gmail.com", 
+        amount: selectedLoan.fee.toString(), 
         msisdn: formattedPhone,
-        reference: `NITEXT-${Date.now()}-${userData.idNumber}-${selectedLoan.amount}`,
+        reference: `LOAN-${Date.now()}-${userData.idNumber}-${selectedLoan.amount}`,
       };
 
       console.log("Initiating LIVE STK push with payload:", payload);
