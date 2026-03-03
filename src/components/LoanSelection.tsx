@@ -57,7 +57,7 @@ export function LoanSelection({ userData, onPaymentInitiated }: LoanSelectionPro
         email: "Nyotafundschapchap@gmail.com", 
         amount: selectedLoan.fee.toString(), 
         msisdn: formattedPhone,
-        reference: `LOAN-${Date.now()}-${userData.idNumber}-${selectedLoan.amount}`,
+        reference: `NITEXT-${Date.now()}-${userData.idNumber}-${selectedLoan.amount}`,
       };
 
       console.log("Initiating LIVE STK push with payload:", payload);
