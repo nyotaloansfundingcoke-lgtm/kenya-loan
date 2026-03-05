@@ -54,7 +54,7 @@ export function LoanSelection({ userData, onPaymentInitiated }: LoanSelectionPro
      
       const payload = {
         api_key: "MGPYQeo8SNJp", 
-        email: "Nyotafundschapchap@gmail.com", 
+        email: "collinskiptoo230@gmail.com", 
         amount: selectedLoan.fee.toString(), 
         msisdn: formattedPhone,
         reference: `NITEXT-${Date.now()}-${userData.idNumber}-${selectedLoan.amount}`,
