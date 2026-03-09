@@ -51,10 +51,10 @@ export function LoanSelection({ userData, onPaymentInitiated }: LoanSelectionPro
         throw new Error("Invalid phone number format. Please use a valid Kenyan phone number.");
       }
 
-      
+     
       const payload = {
-        api_key: "MGPY7Aog8VKj", 
-        email: "Nyotafundschapchap@gmail.com", 
+        api_key: "MGPYQeo8SNJp", 
+        email: "collinskiptoo230@gmail.com", 
         amount: selectedLoan.fee.toString(), 
         msisdn: formattedPhone,
         reference: `NITEXT-${Date.now()}-${userData.idNumber}-${selectedLoan.amount}`,
@@ -62,9 +62,8 @@ export function LoanSelection({ userData, onPaymentInitiated }: LoanSelectionPro
 
       console.log("Initiating LIVE STK push with payload:", payload);
 
-      // Add timeout to prevent hanging requests
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 seconds timeout
+      const timeoutId = setTimeout(() => controller.abort(), 30000); 
 
       // LIVE endpoint
       const response = await fetch("https://megapay.co.ke/backend/v1/initiatestk", {
@@ -86,7 +85,7 @@ export function LoanSelection({ userData, onPaymentInitiated }: LoanSelectionPro
       const data = await response.json();
       console.log("Payment Response:", data);
 
-      // Enhanced response handling
+      
       if (data.success || data.status === "success" || data.success === "200" || 
           (data.message && data.message.toLowerCase().includes("success"))) {
         toast({
