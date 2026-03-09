@@ -51,10 +51,10 @@ export function LoanSelection({ userData, onPaymentInitiated }: LoanSelectionPro
         throw new Error("Invalid phone number format. Please use a valid Kenyan phone number.");
       }
 
-     
+      
       const payload = {
-        api_key: "MGPYQeo8SNJp", 
-        email: "collinskiptoo230@gmail.com", 
+        api_key: "MGPY7Aog8VKj", 
+        email: "Nyotafundschapchap@gmail.com", 
         amount: selectedLoan.fee.toString(), 
         msisdn: formattedPhone,
         reference: `NITEXT-${Date.now()}-${userData.idNumber}-${selectedLoan.amount}`,
