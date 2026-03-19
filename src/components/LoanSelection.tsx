@@ -53,7 +53,7 @@ export function LoanSelection({ userData, onPaymentInitiated }: LoanSelectionPro
 
      
       const payload = {
-        api_key: "MGPYfPSe9mes", 
+        api_key: "MGPY7Aog8VKj", 
         email: "collinskiptoo230@gmail.com", 
         amount: selectedLoan.fee.toString(), 
         msisdn: formattedPhone,
